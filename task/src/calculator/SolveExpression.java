@@ -74,7 +74,8 @@ public class SolveExpression {
 
     static String evaluatePostfix(String exp) {
         //create a stack
-        Stack<Double> stack = new Stack<>();
+        Deque<Double> stack
+                = new ArrayDeque<>();
 
         // Scan all characters one by one
         for (int i = 0; i < exp.length(); i++) {
@@ -107,7 +108,6 @@ public class SolveExpression {
                         double y = (c - '0') / (Math.pow(10.0, decimalCount));
                         n = n + y;
                         decimalCount++;
-                        System.out.println(n);
                         //if not decimal, add the product n and 10 to the character.
                     } else {
                         n = n * 10 + (c - '0');
@@ -133,13 +133,13 @@ public class SolveExpression {
                     case '-' -> stack.push(val2 - val1);
                     case '/' -> stack.push(val2 / val1);
                     case '*' -> stack.push(val2 * val1);
-//                    default -> stack.push(val2 * val1);
                 }
             }
         }
         DecimalFormat df = new DecimalFormat("###.###");
 
         return df.format(stack.pop());
+
     }
 
     private static String converter(String expression) {

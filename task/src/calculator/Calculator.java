@@ -2,12 +2,17 @@ package calculator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class Calculator extends JFrame {
     private static final int WINDOW_WIDTH = 400;
     private static final int WINDOW_HEIGHT = 500;
-    private static JLabel equationLabel;
+    static JLabel equationLabel;
     private static JLabel resultLabel;
+    private static boolean operandAdded;
+
+    private static int indexOfLastOperator = 0;
+    private static final List<String> numbers = List.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
 
 
     public Calculator() {
@@ -20,10 +25,12 @@ public class Calculator extends JFrame {
     }
 
     private void components() {
-        JPanel buttonPanel = new JPanel(); //JPanel is a smaller container, it cannot represent a window of a program.
+        JPanel buttonPanel = new JPanel();
         buttonPanel.setBounds(40, 150, 220, 70);
         buttonPanel.setLayout(new BorderLayout());
         add(buttonPanel);
+
+        Font font = new Font("Courier", Font.BOLD, 12);
 
         equationLabel = new JLabel();
         equationLabel.setName("EquationLabel");
@@ -31,6 +38,9 @@ public class Calculator extends JFrame {
         add(equationLabel);
         equationLabel.setHorizontalAlignment(SwingConstants.CENTER);
         equationLabel.setVerticalAlignment(SwingConstants.CENTER);
+        equationLabel.setFont(font);
+        equationLabel.setForeground(Color.GREEN.darker());
+
 
         resultLabel = new JLabel();
         resultLabel.setName("ResultLabel");
@@ -39,62 +49,62 @@ public class Calculator extends JFrame {
 
         JButton btn0 = new JButton("0");
         btn0.setName("Zero");
-        btn0.addActionListener(e -> addToTextBox(btn0));
+        btn0.addActionListener(e -> addOperandToTextBox(btn0));
         JButton btn1 = new JButton("1");
         btn1.setName("One");
-        btn1.addActionListener(e -> addToTextBox(btn1));
+        btn1.addActionListener(e -> addOperandToTextBox(btn1));
 
         JButton btn2 = new JButton("2");
         btn2.setName("Two");
-        btn2.addActionListener(e -> addToTextBox(btn2));
+        btn2.addActionListener(e -> addOperandToTextBox(btn2));
 
         JButton btn3 = new JButton("3");
         btn3.setName("Three");
-        btn3.addActionListener(e -> addToTextBox(btn3));
+        btn3.addActionListener(e -> addOperandToTextBox(btn3));
 
         JButton btn4 = new JButton("4");
         btn4.setName("Four");
-        btn4.addActionListener(e -> addToTextBox(btn4));
+        btn4.addActionListener(e -> addOperandToTextBox(btn4));
 
         JButton btn5 = new JButton("5");
         btn5.setName("Five");
-        btn5.addActionListener(e -> addToTextBox(btn5));
+        btn5.addActionListener(e -> addOperandToTextBox(btn5));
 
         JButton btn6 = new JButton("6");
         btn6.setName("Six");
-        btn6.addActionListener(e -> addToTextBox(btn6));
+        btn6.addActionListener(e -> addOperandToTextBox(btn6));
 
         JButton btn7 = new JButton("7");
         btn7.setName("Seven");
-        btn7.addActionListener(e -> addToTextBox(btn7));
+        btn7.addActionListener(e -> addOperandToTextBox(btn7));
 
         JButton btn8 = new JButton("8");
         btn8.setName("Eight");
-        btn8.addActionListener(e -> addToTextBox(btn8));
+        btn8.addActionListener(e -> addOperandToTextBox(btn8));
 
         JButton btn9 = new JButton("9");
         btn9.setName("Nine");
-        btn9.addActionListener(e -> addToTextBox(btn9));
+        btn9.addActionListener(e -> addOperandToTextBox(btn9));
 
         JButton Add = new JButton("\u002B");
         Add.setName("Add");
-        Add.addActionListener(e -> addToTextBox(Add));
+        Add.addActionListener(e -> addOperatorToTextBox(Add));
 
         JButton subtract = new JButton("-");
         subtract.setName("Subtract");
-        subtract.addActionListener(e -> addToTextBox(subtract));
+        subtract.addActionListener(e -> addOperatorToTextBox(subtract));
 
         JButton multiply = new JButton("\u00D7");
         multiply.setName("Multiply");
-        multiply.addActionListener(e -> addToTextBox(multiply));
+        multiply.addActionListener(e -> addOperatorToTextBox(multiply));
 
         JButton divide = new JButton("\u00F7");
         divide.setName("Divide");
-        divide.addActionListener(e -> addToTextBox(divide));
+        divide.addActionListener(e -> addOperatorToTextBox(divide));
 
         JButton dot = new JButton(".");
         dot.setName("Dot");
-        dot.addActionListener(e -> addToTextBox(dot));
+        dot.addActionListener(e -> addOperandToTextBox(dot));
 
         JButton equals = new JButton("=");
         equals.setName("Equals");
@@ -102,7 +112,7 @@ public class Calculator extends JFrame {
 
         JButton clearTextField = new JButton("C");
         clearTextField.setName("Clear");
-        clearTextField.addActionListener(e -> equationLabel.setText(""));
+        clearTextField.addActionListener(e -> clearTextField());
 
         JButton delete = new JButton("Del");
         delete.setName("Delete");
@@ -136,22 +146,93 @@ public class Calculator extends JFrame {
 
     }
 
-    private void addToTextBox(JButton jButton) {
-        String expression = equationLabel.getText();
-        String buttonText = jButton.getText();
-        equationLabel.setText(expression + buttonText);
+    private void clearTextField() {
+        equationLabel.setText("");
+        indexOfLastOperator = 0;
     }
-    private void deleteFromTextBox() {
+
+    private void addOperandToTextBox(JButton jButton) {
+        equationLabel.setForeground(Color.GREEN.darker());//this is to change the colour back to green in case it is red because of error
+        equationLabel.setText(equationLabel.getText() + jButton.getText());
+        operandAdded = true;
+    }
+
+    private void addOperatorToTextBox(JButton jButton) {
         StringBuilder expression = new StringBuilder(equationLabel.getText());
-        expression.deleteCharAt(expression.length()-1);
-        equationLabel.setText(String.valueOf(expression));
+        String buttonText = jButton.getText();
+        if (operandAdded) { // this boolean prevents indexOutOfBounds in the case that the user enters 2 operators next to each other
+            if (indexOfLastOperator > 0 && expression.charAt(indexOfLastOperator + 1) == '.') {
+                indexOfLastOperator++;
+                expression.insert(indexOfLastOperator, "0"); //handles expression like 0.9*.6+2
+                equationLabel.setText(String.valueOf(expression));
+            }
+        }
+
+
+        indexOfLastOperator = expression.length();
+
+        if (expression.isEmpty()) { //if the first button pressed is an operator, do nothing
+            equationLabel.setText("");
+        } else {
+            String lastCharInLabel = String.valueOf(expression.charAt(expression.length() - 1));
+            String firstCharInLabel = String.valueOf(expression.charAt(0));
+
+            if (lastCharInLabel.equals(".")) { //handles 0.2+9.
+                indexOfLastOperator++;
+                expression.append("0");
+                expression.append(buttonText);
+                equationLabel.setText(String.valueOf(expression));
+            } else if (!numbers.contains(lastCharInLabel)) { //if the last char in the label is an operator, delete it and add the last one pressed
+                expression = new StringBuilder(expression.substring(0, expression.length() - 1));
+                expression.append(buttonText);
+                equationLabel.setText(String.valueOf(expression));
+                indexOfLastOperator--;
+            } else if (firstCharInLabel.equals(".")) { //handles .9+2
+                indexOfLastOperator++;
+                expression.insert(0, "0");
+                expression.append(buttonText);
+                equationLabel.setText(String.valueOf(expression));
+
+            } else { // add the operator if the expression is fine
+                expression.append(buttonText);
+                equationLabel.setText(String.valueOf(expression));
+
+            }
+            operandAdded = false;
+        }
     }
+
+    private void deleteFromTextBox() {
+        equationLabel.setForeground(Color.GREEN.darker());//this is to change the colour back to green in case it is red because to error
+
+        StringBuilder expression = new StringBuilder(equationLabel.getText());
+        //if the textBox is empty, do nothing, otherwise delete the last character;
+        if (!expression.isEmpty()) {
+            expression.deleteCharAt(expression.length() - 1);
+            equationLabel.setText(String.valueOf(expression));
+        }
+        //a bug here, I need to add a logic here to reset indexOfLastOperator, if an operator is deleted
+    }
+
     private void calculateExp() {
-        String expression = equationLabel.getText();
-        String result = SolveExpression.evaluatePostfix(SolveExpression.infixToPostfix(expression));
-        resultLabel.setText(result);
+        StringBuilder expression = new StringBuilder(equationLabel.getText());
+        String lastCharInLabel = String.valueOf(expression.charAt(expression.length() - 1));
+        if (!numbers.contains(lastCharInLabel)) {// handles 9+8.= or 9+
+            equationLabel.setForeground(Color.RED.darker()); //set the label to red and signify that something is wrong
+            return;
+        }
 
-
+        //handles error that will result from an expression like this 9+.2=
+        if (indexOfLastOperator > 0 && expression.charAt(indexOfLastOperator + 1) == '.') {
+            indexOfLastOperator++;
+            expression.insert(indexOfLastOperator, "0");
+        }
+        String result = SolveExpression.evaluatePostfix(SolveExpression.infixToPostfix(String.valueOf(expression)));
+        if (result.equals("∞")) {         //since I am using double, division by zero will return infinity.
+            equationLabel.setForeground(Color.RED.darker());
+        } else {
+            resultLabel.setText(result);
+        }
     }
 
 
