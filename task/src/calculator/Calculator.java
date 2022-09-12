@@ -135,7 +135,7 @@ public class Calculator extends JFrame {
         squareRoot.setName("SquareRoot");
         squareRoot.addActionListener(e -> {
             equationLabel.setText(equationLabel.getText() + "\u221A" + "(");
-            numberOfLeftParentheses++;//There was a need to keep count of the parentheses added to the equation because i didn't want to use loop to count
+            numberOfLeftParentheses++;//There was a need to keep count of the parentheses added to the equation because I didn't want to use loop to count
         });
 
         JButton powerTwo = new JButton("X²");

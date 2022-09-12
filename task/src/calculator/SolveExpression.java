@@ -3,8 +3,6 @@ package calculator;
 import java.text.DecimalFormat;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.List;
-import java.util.Stack;
 
 public class SolveExpression {
     static int precedence(char ch) {
@@ -18,7 +16,6 @@ public class SolveExpression {
 
     static String infixToPostfix(String exp) {
         exp = converter(exp);
-        System.out.println(exp);//--------------------------------------------------------
         // initializing empty String for result
         StringBuilder result = new StringBuilder();
 
@@ -74,7 +71,6 @@ public class SolveExpression {
     }
 
     static String evaluatePostfix(String exp) {
-        System.out.println(exp);//---------------------------------------------------------------
         //create a stack
         Deque<Double> stack
                 = new ArrayDeque<>();
@@ -135,9 +131,7 @@ public class SolveExpression {
                     case '-' -> stack.push(val2 - val1);
                     case '/' -> stack.push(val2 / val1);
                     case '*' -> stack.push(val2 * val1);
-                    case '√' -> {
-                        stack.push(Math.sqrt(val1));
-                    }
+                    case '√' -> stack.push(Math.sqrt(val1));
                     case '^' -> stack.push(Math.pow(val2, val1));
                 }
             }
