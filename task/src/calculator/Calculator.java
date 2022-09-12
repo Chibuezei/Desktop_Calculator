@@ -6,13 +6,17 @@ import java.util.List;
 
 public class Calculator extends JFrame {
     private static final int WINDOW_WIDTH = 400;
-    private static final int WINDOW_HEIGHT = 500;
+    private static final int WINDOW_HEIGHT = 600;
     static JLabel equationLabel;
     private static JLabel resultLabel;
     private static boolean operandAdded;
+    private static boolean negated;
+    private static int numberOfLeftParentheses;
+    private static int numberOfRightParentheses;
 
     private static int indexOfLastOperator = 0;
     private static final List<String> numbers = List.of("1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
+    private static final List<String> operators = List.of("+", "-", "×", "÷", "^", "√");
 
 
     public Calculator() {
@@ -114,33 +118,88 @@ public class Calculator extends JFrame {
         clearTextField.setName("Clear");
         clearTextField.addActionListener(e -> clearTextField());
 
+        JButton clearText = new JButton("CE");
+        clearText.setName("dummy");
+        clearText.addActionListener(e -> clearTextField());
+
         JButton delete = new JButton("Del");
         delete.setName("Delete");
         delete.addActionListener(e -> deleteFromTextBox());
 
+        JButton bracket = new JButton("( )");
+        bracket.setName("Parentheses");
+        bracket.addActionListener(e -> addParentheses());
+
+
+        JButton squareRoot = new JButton("\u221A");
+        squareRoot.setName("SquareRoot");
+        squareRoot.addActionListener(e -> {
+            equationLabel.setText(equationLabel.getText() + "\u221A" + "(");
+            numberOfLeftParentheses++;//There was a need to keep count of the parentheses added to the equation because i didn't want to use loop to count
+        });
+
+        JButton powerTwo = new JButton("X²");
+        powerTwo.setName("PowerTwo");
+        powerTwo.addActionListener(e -> {
+            equationLabel.setText(equationLabel.getText() + "^" + "(2)");
+            numberOfLeftParentheses++;//
+            numberOfRightParentheses++;
+        });
+
+        JButton powerY = new JButton("X^");
+        powerY.setName("PowerY");
+        powerY.addActionListener(e -> {
+            equationLabel.setText(equationLabel.getText() + "^(");
+            numberOfLeftParentheses++;
+        });
+
+        JButton plusMinus = new JButton("\u2213");
+        plusMinus.setName("PlusMinus");
+        plusMinus.addActionListener(e -> {
+            if (!negated) {
+                negated = true;//this boolean is needed to remove the negative sign if already added.
+                equationLabel.setText("(-" + equationLabel.getText());
+                numberOfLeftParentheses++;
+            } else {
+                negated = false;
+                numberOfLeftParentheses--;
+                equationLabel.setText(equationLabel.getText().substring(2));
+            }
+        });
+
+        buttonPanel.add(bracket);
+        buttonPanel.add(clearText);
+        buttonPanel.add(clearTextField);
+        buttonPanel.add(delete);
+
+        buttonPanel.add(powerTwo);
+        buttonPanel.add(powerY);
+        buttonPanel.add(squareRoot);
+        buttonPanel.add(divide);
 
         buttonPanel.add(btn7);
         buttonPanel.add(btn8);
         buttonPanel.add(btn9);
-        buttonPanel.add(divide);
+        buttonPanel.add(multiply);
+
         buttonPanel.add(btn4);
         buttonPanel.add(btn5);
         buttonPanel.add(btn6);
-        buttonPanel.add(multiply);
+        buttonPanel.add(subtract);
+
         buttonPanel.add(btn1);
         buttonPanel.add(btn2);
         buttonPanel.add(btn3);
         buttonPanel.add(Add);
-        buttonPanel.add(subtract);
-        buttonPanel.add(equals);
+
+        buttonPanel.add(plusMinus);
         buttonPanel.add(btn0);
-        buttonPanel.add(clearTextField);
-        buttonPanel.add(delete);
         buttonPanel.add(dot);
+        buttonPanel.add(equals);
 
 
-        buttonPanel.setLayout(new GridLayout(5, 4, 20, 25));
-        buttonPanel.setSize(300, 300);
+        buttonPanel.setLayout(new GridLayout(6, 4, 10, 15));
+        buttonPanel.setSize(350, 400);
         buttonPanel.setVisible(true);
 
 
@@ -148,7 +207,10 @@ public class Calculator extends JFrame {
 
     private void clearTextField() {
         equationLabel.setText("");
-        indexOfLastOperator = 0;
+        indexOfLastOperator = 0; //resetting all the variables used for keeping count
+        numberOfLeftParentheses = 0;
+        numberOfRightParentheses = 0;
+        negated = false;
     }
 
     private void addOperandToTextBox(JButton jButton) {
@@ -182,7 +244,7 @@ public class Calculator extends JFrame {
                 expression.append("0");
                 expression.append(buttonText);
                 equationLabel.setText(String.valueOf(expression));
-            } else if (!numbers.contains(lastCharInLabel)) { //if the last char in the label is an operator, delete it and add the last one pressed
+            } else if (operators.contains(lastCharInLabel)) { //if the last char in the label is an operator, delete it and add the last one pressed
                 expression = new StringBuilder(expression.substring(0, expression.length() - 1));
                 expression.append(buttonText);
                 equationLabel.setText(String.valueOf(expression));
@@ -211,13 +273,13 @@ public class Calculator extends JFrame {
             expression.deleteCharAt(expression.length() - 1);
             equationLabel.setText(String.valueOf(expression));
         }
-        //a bug here, I need to add a logic here to reset indexOfLastOperator, if an operator is deleted
+        //a bug maybe here, I need to add a logic here to reset indexOfLastOperator, if an operator is deleted
     }
 
     private void calculateExp() {
         StringBuilder expression = new StringBuilder(equationLabel.getText());
         String lastCharInLabel = String.valueOf(expression.charAt(expression.length() - 1));
-        if (!numbers.contains(lastCharInLabel)) {// handles 9+8.= or 9+
+        if (operators.contains(lastCharInLabel) || lastCharInLabel.equals("(")) {// handles 9+8.= or 9+
             equationLabel.setForeground(Color.RED.darker()); //set the label to red and signify that something is wrong
             return;
         }
@@ -232,6 +294,29 @@ public class Calculator extends JFrame {
             equationLabel.setForeground(Color.RED.darker());
         } else {
             resultLabel.setText(result);
+        }
+    }
+
+    private static void addParentheses() {
+        StringBuilder expression = new StringBuilder(equationLabel.getText());
+        boolean parenthesesAdded = false;
+
+        if (numberOfLeftParentheses == numberOfRightParentheses) {
+            equationLabel.setText(equationLabel.getText() + "(");
+            numberOfLeftParentheses++;
+            parenthesesAdded = true;
+        } else if (!expression.isEmpty()) { //prevents indexOutOfBounds
+            String lastCharInLabel = String.valueOf(expression.charAt(expression.length() - 1));
+
+            if (lastCharInLabel.equals("(") || operators.contains(lastCharInLabel)) {
+                equationLabel.setText(equationLabel.getText() + "(");
+                numberOfLeftParentheses++;
+                parenthesesAdded = true;
+            }
+        }
+        if (!parenthesesAdded) {
+            equationLabel.setText(equationLabel.getText() + ")");
+            numberOfRightParentheses++;
         }
     }
 

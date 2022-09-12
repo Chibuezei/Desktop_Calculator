@@ -3,6 +3,7 @@ package calculator;
 import java.text.DecimalFormat;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 import java.util.Stack;
 
 public class SolveExpression {
@@ -10,13 +11,14 @@ public class SolveExpression {
         return switch (ch) {
             case '+', '-' -> 1;
             case '*', '/' -> 2;
-            case '^' -> 3;
+            case '^', '√' -> 3;
             default -> -1;
         };
     }
 
     static String infixToPostfix(String exp) {
         exp = converter(exp);
+        System.out.println(exp);//--------------------------------------------------------
         // initializing empty String for result
         StringBuilder result = new StringBuilder();
 
@@ -68,11 +70,11 @@ public class SolveExpression {
             result.append(stack.peek());
             stack.pop();
         }
-//        System.out.println(result);
         return result.toString();
     }
 
     static String evaluatePostfix(String exp) {
+        System.out.println(exp);//---------------------------------------------------------------
         //create a stack
         Deque<Double> stack
                 = new ArrayDeque<>();
@@ -126,13 +128,17 @@ public class SolveExpression {
             // elements from stack apply the operator
             else {
                 double val1 = stack.pop();
-                double val2 = stack.pop();
+                double val2 = c == '√' ? 1 : stack.pop();//this should have been stack.pop(), but modified to carter for √(4) where stack length is 1;
 
                 switch (c) {
                     case '+' -> stack.push(val2 + val1);
                     case '-' -> stack.push(val2 - val1);
                     case '/' -> stack.push(val2 / val1);
                     case '*' -> stack.push(val2 * val1);
+                    case '√' -> {
+                        stack.push(Math.sqrt(val1));
+                    }
+                    case '^' -> stack.push(Math.pow(val2, val1));
                 }
             }
         }
@@ -143,12 +149,16 @@ public class SolveExpression {
     }
 
     private static String converter(String expression) {
-        for (int i = 0; i < expression.length(); i++) {
-            if (expression.charAt(i) == '×') {
+        for (int i = 1; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+            if (c == '×') {
                 expression = expression.substring(0, i) + "*" + expression.substring(i + 1);
             }
-            if (expression.charAt(i) == '÷') {
+            if (c == '÷') {
                 expression = expression.substring(0, i) + "/" + expression.substring(i + 1);
+            }
+            if (c == '-' && expression.charAt(i - 1) == '(') {//this was added to handle negative expressions like (-2-2)
+                expression = expression.substring(0, i) + "0-" + expression.substring(i + 1);
             }
         }
         return expression;
